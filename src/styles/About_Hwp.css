@@ -1,0 +1,64 @@
+.hwp-content-container {
+    position: relative;
+    height: 100%;
+}
+
+.content-detail {
+    margin-right: 65px;
+    padding-left: 40px;
+    line-height: 1.8; 
+    color: #f1f1f1;
+    font-family: 'Arial', sans-serif; 
+}
+
+.content-detail h1 {
+    font-size: 2.8rem; 
+    font-weight: bold;
+    margin-bottom: 40px;
+    color: white; 
+}
+
+/* 아이콘과 첫 번째 문단을 위한 Flexbox 컨테이너 */
+.icon-paragraph-group-hwp {
+    display: flex;
+    align-items: flex-start; /* 아이콘과 텍스트 상단 정렬 */
+    margin-bottom: 30px; /* 첫 번째 문단 아래 간격 */
+    margin-right: 40px;
+}
+
+.hwp-icon {
+    margin-right: 30px; /* 아이콘과 텍스트 사이 간격 */
+    border-radius: 10px; 
+    padding: 10px; /* 아이콘 내부 여백 */
+}
+
+.main-paragraph {
+    font-size: 1.1rem; /* 첫 번째 문단 폰트 크기 */
+    color: #e0e0e0;
+    flex-grow: 1; /* 남은 공간을 채우도록 */
+}
+
+/* Next 버튼 */
+.next-button-hwp {
+    position: absolute;
+    right: 0px;
+    bottom: -160px; 
+    display: flex;
+    align-items: center;
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: #ffb300; 
+    cursor: pointer;
+    transition: color 0.3s ease;
+    font-family: 'Arial', sans-serif; 
+}
+
+.next-button:hover {
+    color: orange;
+}
+
+.arrow {
+    margin-right: 30px;
+    margin-left: 20px; 
+    font-size: 2rem; 
+}
