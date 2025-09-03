@@ -15,12 +15,13 @@
   display: flex;
   justify-content: center;
   align-items: center; 
-  gap: 110px;
   background-color: var(--nav-bg-color);
   border-radius: 10px;
-  padding: 15px 30px; 
+  padding: 15px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   width: 90%; 
+  gap: 10rem;
+
 }
 
 .menu-item {

@@ -19,6 +19,7 @@
     gap: 20px;
     overflow-y: auto;
     padding-right: 15px;
+    height: 100%;
 }
 
 .content-icon {
@@ -33,17 +34,4 @@
     font-size: 0.7rem;
     margin-right: 46px; 
     color: #c0c0c0;
-}
-
-.next-button {
-    align-self: flex-end;
-    cursor: pointer;
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: var(--active-tab-color);
-    flex-shrink: 0; 
-}
-
-.next-button .arrow {
-    margin-left: 10px;
 }

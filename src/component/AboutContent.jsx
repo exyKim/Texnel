@@ -14,9 +14,6 @@ const AboutContent = ({ title, iconSrc, iconAlt, children }) => {
                 </div>
             </div>
             
-            <div className="next-button">
-                <span>Next</span> <span className="arrow">></span>
-            </div>
         </div>
     );
 };

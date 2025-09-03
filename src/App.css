@@ -13,7 +13,7 @@ html, body, #root {
 
 /* 색상 변수 정의 */
 :root {
-    --main-bg-color: #2c2f33;
+    --main-bg-color: #323745;
     --section-bg-color: #1a1a1a;
     --nav-bg-color: #1e1e1e;
     --text-color: #c9c9c9;
