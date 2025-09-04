@@ -3,7 +3,6 @@ import { NavLink } from 'react-router-dom';
 import MainLogo from '../images/Main_logo.svg';
 import '../styles/MenuBar.css';
 
-// 재사용 가능한 메뉴바 컴포넌트
 export default function MenuBar() {
   return (
     <>

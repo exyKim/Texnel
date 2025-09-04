@@ -1,11 +1,17 @@
 import React from 'react';
+import AboutContent from '../component/Box.jsx'; 
 
-// 👇 이 export default가 없어서 발생한 오류입니다.
 export default function Guide() {
   return (
     <div>
-      <h1>Guide Page</h1>
-      <p>프로그램 사용법을 안내하는 페이지입니다.</p>
+          <AboutContent 
+            title="Guide" 
+          >
+            <p>
+              이 도구는 HWP 또는 DOCX 파일을 업로드하면, 문서 안에 숨겨진 악성 패턴을 자동으로 스캔합니다.
+              <br/><br/>
+            </p>
+          </AboutContent>
     </div>
   );
 }
