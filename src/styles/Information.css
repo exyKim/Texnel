@@ -1,0 +1,105 @@
+.information-container {
+  margin: 1.5rem;
+  color: #fff;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.information-container .box {
+  overflow: hidden;          /* 둥근 모서리 밖으로 튀는 요소/그림자 숨김 */
+}
+
+.info-title {
+  font-size: 1.8rem;
+  margin-bottom: 2rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-align: left;
+}
+
+/* 타임라인 */
+.timeline {
+  --circle-size: 34px;
+  --stroke: 2px;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin: 0 auto 2rem;
+  max-width: 880px;
+  padding: 0;
+}
+
+.timeline-item {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #ff9d3b;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  z-index: 1;
+}
+
+.timeline-item::after {
+  content: "";
+  position: absolute;
+  top: calc(var(--circle-size) / 2);
+  left: 50%;
+  width: 100%;
+  height: var(--stroke);
+  background: #ff9d3b;
+  transform: translateY(-50%);
+  z-index: 0;
+}
+
+.timeline-item:last-child::after {
+  display: none;
+}
+
+.circle {
+  position: relative;
+  z-index: 1;
+  width: var(--circle-size);
+  height: var(--circle-size);
+  border-radius: 50%;
+  background: #ff9d3b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1e1e1e;
+  font-weight: 700;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+/* 아래 정보 3열 */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  padding: 1rem;
+}
+
+.info-block {
+  font-size: 0.9rem;
+  color: #cfcfcf;
+  line-height: 2.5;
+}
+
+.info-block a {
+  color: #ff9d3b;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.info-block a:hover {
+  color: #ffffff;  
+}
+
+.information-container .box::after { display: none; }
+
+.information-container .box::after,
+.information-container .box::before {
+  display: none;
+}

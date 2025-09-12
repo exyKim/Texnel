@@ -5,7 +5,6 @@
 
 .about-title {
     font-size: 2rem;
-    font-family: 'Segoe UI';
     color: #ffffff;
     letter-spacing: 0.08em;
     margin-bottom: 1.2rem;
@@ -27,7 +26,6 @@
 .about-text {
   flex: 1;                  
   color: #cfcfcf;
-  font-family: 'Segoe UI';
   line-height: 1.8;
   font-size: 0.9rem;
 }
@@ -87,7 +85,6 @@
 .about-text {
   flex: 1;
   color: #cfcfcf;
-  font-family: 'Segoe UI';
   line-height: 1.8;
   font-size: 0.9rem;
 }

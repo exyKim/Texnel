@@ -1,0 +1,67 @@
+/* 카드 컨테이너 (고정 크기) */
+.about-box {
+  width: 300px;              /* 고정 */
+  height: 220px;             /* 고정 */
+  background: #282A2E;       /* 요청 색상 */
+  border-radius: 16px;
+  padding: 18px;
+  display: flex;
+  gap: 14px;
+  color: #cfcfcf;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+}
+
+/* 호버 살짝 띄우기(선택) */
+.about-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.45);
+  transition: transform .16s ease, box-shadow .16s ease;
+}
+
+/* 아이콘 영역 */
+.about-box__icon img {
+  width: 48px;
+  height: 48px;
+  display: block;
+}
+
+/* 텍스트 영역 */
+.about-box__text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow: hidden; /* 긴 텍스트 대비 */
+}
+
+/* 제목/부제/본문 */
+.about-box__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #f7f7f7;
+  letter-spacing: .2px;
+}
+
+.about-box__subtitle {
+  font-size: 12px;
+  color: #9aa1aa;
+}
+
+.about-box__desc {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #cfd3d8;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;      /* 고정 높이 안에서 4줄까지만 표시 */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 그리드(부모 레이아웃) – 4개 배치용 */
+.about-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}

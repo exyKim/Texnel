@@ -1,0 +1,78 @@
+/* 레이아웃 */
+.guide-wrap { position: relative; }
+.guide-title {
+  color:#fff; font-size:1.4rem; font-weight:600; margin-bottom:12px; letter-spacing:.04em;
+}
+.guide-intro {
+  color:#cfcfcf; line-height:1.8; margin-bottom:14px; font-size:.95rem;
+}
+
+/* 사진처럼: 둥근 패널 */
+.guide-panel{
+  position: relative;
+  border-radius: 18px;
+  background: #1f2126;            /* 어두운 패널 */
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+  overflow: hidden;                /* 내부 내용이 절대 넘치지 않도록 */
+}
+
+/* 내부 스크롤 박스 */
+.guide-scroll{
+  max-height: 56vh;               /* 세로 높이 제한 */
+  overflow-y: auto;               /* 스크롤 생성 */
+  padding: 18px 20px;             /* 텍스트 패딩 */
+  scrollbar-width: thin;          /* Firefox */
+  scrollbar-color: rgba(180,180,180,.35) transparent;
+  /* 텍스트가 네모를 넘지 않도록 */
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* WebKit 스크롤 */
+.guide-scroll::-webkit-scrollbar{ width:8px; }
+.guide-scroll::-webkit-scrollbar-track{ background: transparent; }
+.guide-scroll::-webkit-scrollbar-thumb{
+  background: rgba(180,180,180,.35);
+  border-radius: 8px;
+}
+.guide-scroll::-webkit-scrollbar-thumb:hover{ background: rgba(210,210,210,.5); }
+
+/* 타이포 */
+.guide-section{ padding: 14px 2px; }
+.guide-h3{ color:#f3f3f3; font-size:1.05rem; font-weight:700; margin:4px 0 10px; }
+.guide-list{ margin:0; padding-left:18px; color:#d7d7d7; }
+.guide-list li{ margin:8px 0 12px; line-height:1.7; }
+.guide-desc{ color:#aeb1b7; font-size:.9rem; margin-top:4px; }
+
+/* 우측 얇은 화살표 스택 (사진 느낌) */
+.guide-arrows{
+  position: absolute;
+  right: 10px;
+  top: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;   /* 클릭 통과 */
+}
+.arrow-btn{
+  pointer-events: auto;   /* 버튼만 클릭 가능 */
+  width: 26px; height: 26px;
+  border: 2px solid #ffb04d;     /* 얇은 주황 링 */
+  border-radius: 50%;
+  background: transparent;
+  color: #ffffff;
+  display:flex; align-items:center; justify-content:center;
+  cursor: pointer;
+}
+.arrow-dot{
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: #0c0f13;            /* 어두운 점(사진처럼) */
+}
+
+/* 반응형 */
+@media (max-width: 860px){
+  .guide-scroll{ max-height: 48vh; }
+  .guide-arrows{ right: 8px; top: 10px; }
+}
