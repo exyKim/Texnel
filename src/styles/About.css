@@ -79,3 +79,42 @@
   letter-spacing: 0.08em;
   margin-top: 8px;
 }
+
+.about-inner {
+  position: relative;
+}
+
+.about-text {
+  flex: 1;
+  color: #cfcfcf;
+  font-family: 'Segoe UI';
+  line-height: 1.8;
+  font-size: 0.9rem;
+}
+
+.next-button {
+  position: absolute;
+  right: 32px;
+  bottom: -4rem;
+  z-index: 2;             
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #f7931e;
+  font-size: 25px;
+  font-weight: 600;
+  outline: none;
+}
+
+.next-button:focus { 
+  outline: none; box-shadow: none; 
+}
+
+
+.next-button img { 
+  width: 24px; height: 24px; 
+}
+
