@@ -100,3 +100,167 @@
   .ud-icon--sm { width: 92px; }
   .ud-headline { font-size: 20px; letter-spacing: 0.14em; }
 }
+
+
+/* --- Scan panel styles --- */
+
+/* ===== Scan panel (alignment tuned) ===== */
+
+.scan-wrap {
+  color: #e6e6e6;
+  padding: 8px 0 20px;
+}
+
+.scan-title {
+  text-align: center;
+  margin: 6px 0 18px;
+  letter-spacing: 1px;
+  font-weight: 700;
+  font-size: 22px;
+  color: #cfd3dc;
+}
+
+.scan-title.hot {
+  color: #ff6a00; /* DETECTED! */
+}
+
+.scan-title.ok {
+  color: #00d66b; /* NO DETECTED! */
+}
+
+/* 테이블 컨테이너: Box 안에서 가운데 정렬 */
+.scan-table {
+  background: #1e2127;
+  border-radius: 14px;
+  padding: 18px;
+  width: calc(100% - 70px);
+  max-width: 800px;
+  margin: 0 auto 12px;  /* 프로그래스바와 간격 조금 */
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .35);
+  display: flex;
+  flex-direction: column;
+}
+
+/* 컬럼 그리드: 이름은 유동, DATE 200px, ERROR 200px */
+.scan-head,
+.scan-row {
+  display: grid;
+  grid-template-columns: 1fr 200px 200px;
+  align-items: center;
+  column-gap: 16px;
+}
+
+.scan-head {
+  padding: 0 8px 12px;
+  color: #aab1bf;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+  letter-spacing: .6px;
+}
+
+.scan-body {
+  max-height: 260px;       
+  overflow-y: auto;
+  margin-top: 8px;
+}
+
+.scan-body::-webkit-scrollbar {
+  width: 6px;
+}
+.scan-body::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 3px;
+}
+.scan-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+
+.scan-body .scan-row {
+  padding: 14px 8px;
+  border-bottom: 1px dashed rgba(255, 255, 255, .06);
+}
+
+.scan-body .scan-row:last-child {
+  border-bottom: none;
+}
+
+.col.name {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; 
+  gap: 12px;
+  min-width: 0;
+  text-align: left;         
+}
+
+.fname {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+.col.date {
+  color: #cbd3e1;
+  justify-self: start;       
+  text-align: left;     
+}
+
+.col.err {
+  justify-self: center;        
+}
+
+.dot {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #ffb944;
+  transition: all .25s ease;
+}
+
+.dot.on {
+  background: #ffb944;
+  box-shadow:
+    0 0 10px rgba(255, 185, 68, .45),
+    inset 0 0 0 2px rgba(0, 0, 0, .12);
+}
+
+
+.scan-progress {
+  width: calc(100% - 100px);
+  max-width: 800px;       /* 테이블과 폭 맞추기 */
+  margin: 0 auto 18px;    /* 항상 가운데 */
+  text-align: center;     /* label도 가운데 정렬 */
+}
+
+.scan-progress .bar {
+  width: calc(100% - 70px);
+  height: 10px;
+  background: #d9d9d9;
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 0 auto;    
+}
+
+.scan-progress .fill {
+  height: 100%;
+  background: #ff8a1a;
+  width: 0%;
+  transition: width .25s ease;
+}
+
+.scan-progress .label {
+  text-align: center;
+  margin-top: 10px;
+  color: #cfd3dc;
+  font-size: 14px;
+}
+
+/* CTA 버튼 가운데 */
+.scan-cta {
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
+}
