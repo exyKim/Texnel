@@ -20,13 +20,22 @@ const DocxIcon = () => (
   </svg>
 );
 
-export default function UploadAndDetect({ onSelect, onReadMore, onGoToMain }) {
+export default function UploadAndDetect() {
   const inputRef = useRef(null);
 
   const [isDragging, setDragging] = useState(false);
-  const [phase, setPhase] = useState('idle');     // 'idle' | 'scanning' | 'done'
+  const [phase, setPhase] = useState('idle');  // idle | scanning | done | details
   const [progress, setProgress] = useState(0);
-  const [rows, setRows] = useState([]);           // { name, date, willDetect }
+  const [rows, setRows] = useState([]);        // { name, date, willDetect }
+  const [activeFile, setActiveFile] = useState(null);
+
+  useEffect(() => {
+    if (phase !== 'details') return;
+    if (activeFile) return;
+    const detected = rows.filter(r => r.willDetect);
+    const first = detected[0] || rows[0];
+    setActiveFile(first ? first.name : null);
+  }, [phase, rows, activeFile]);
 
   const acceptTypes =
     '.hwp,.docx,application/vnd.hancom.hwp,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
@@ -39,8 +48,6 @@ export default function UploadAndDetect({ onSelect, onReadMore, onGoToMain }) {
     const filtered = arr.filter((f) => /\.(hwp|docx)$/i.test(f.name));
     if (!filtered.length) return;
 
-    onSelect && onSelect(filtered);
-
     const today = fmtDate();
     // 데모 규칙: 파일명 길이 짝수 = 탐지 true
     const mapped = filtered.map((f) => ({
@@ -52,7 +59,7 @@ export default function UploadAndDetect({ onSelect, onReadMore, onGoToMain }) {
     setRows(mapped);
     setProgress(0);
     setPhase('scanning');
-  }, [onSelect]);
+  }, []);
 
   // 진행률 애니메이션
   useEffect(() => {
@@ -73,12 +80,11 @@ export default function UploadAndDetect({ onSelect, onReadMore, onGoToMain }) {
   // Dropzone 핸들러
   const onDrop = (e) => {
     e.preventDefault();
-    e.stopPropagation();
     setDragging(false);
     if (e.dataTransfer?.files?.length) handleFiles(e.dataTransfer.files);
   };
-  const onDragOver  = (e) => { e.preventDefault(); e.stopPropagation(); setDragging(true);  };
-  const onDragLeave = (e) => { e.preventDefault(); e.stopPropagation(); setDragging(false); };
+  const onDragOver  = (e) => { e.preventDefault(); setDragging(true); };
+  const onDragLeave = (e) => { e.preventDefault(); setDragging(false); };
   const onChange    = (e) => { handleFiles(e.target.files); e.target.value = ''; };
 
   // 상태
@@ -92,16 +98,25 @@ export default function UploadAndDetect({ onSelect, onReadMore, onGoToMain }) {
       ? (hasDetection ? 'DETECTED!' : 'NO DETECTED!')
       : null;
 
-  // 메인으로 복귀 (드롭존으로)
+  // 메인으로 복귀
   const handleGoToMain = () => {
-    // 콜백 먼저 호출(원하면 라우팅 등)
-    onGoToMain && onGoToMain();
-    // 로컬 상태 리셋
     setRows([]);
     setProgress(0);
     setPhase('idle');
     setDragging(false);
+    setActiveFile(null);
   };
+
+  // 가짜 탐지 데이터 (실제론 백엔드에서 받아옴)
+  const detectionMap = {
+    macro: { label: 'macro', summary: '매크로 삽입 정황이 의심됩니다.' },
+    command: { label: 'command', summary: '명령 실행 흔적이 의심됩니다.' },
+  };
+  const sampleDetections = [
+    { id: 1, type: 'macro', keyword: '“天下天下 唯我獨尊”' },
+    { id: 2, type: 'command', keyword: '“powershell hidden”' },
+    { id: 3, type: 'macro', keyword: '“AutoOpen”' },
+  ];
 
   return (
     <Box>
@@ -112,25 +127,19 @@ export default function UploadAndDetect({ onSelect, onReadMore, onGoToMain }) {
           onDragOver={onDragOver}
           onDragLeave={onDragLeave}
           onDrop={onDrop}
-          role="button"
-          tabIndex={0}
-          aria-label="파일을 드래그 앤 드롭하거나 Upload 버튼으로 선택"
         >
-          {/* 아이콘 */}
           <div className="ud-icons">
-            <img src={uploadSvg} alt="" className="ud-icon ud-icon--lg" draggable="false" />
+            <img src={uploadSvg} alt="" className="ud-icon ud-icon--lg" />
             <div className="ud-icon-row">
-              <img src={uploadSvg} alt="" className="ud-icon ud-icon--md" draggable="false" />
-              <img src={uploadSvg} alt="" className="ud-icon ud-icon--sm" draggable="false" />
+              <img src={uploadSvg} alt="" className="ud-icon ud-icon--md" />
+              <img src={uploadSvg} alt="" className="ud-icon ud-icon--sm" />
             </div>
           </div>
 
-          {/* 텍스트 */}
           <p className="ud-headline">Enter your file.</p>
           <p className="ud-sub">
             *파일을 업로드 해주세요.
-            <br />
-            *HWP, DOCX only.
+            <br />*HWP, DOCX only.
           </p>
 
           <div className="ud-actions">
@@ -138,7 +147,6 @@ export default function UploadAndDetect({ onSelect, onReadMore, onGoToMain }) {
               Upload
             </Button>
           </div>
-
           <input
             ref={inputRef}
             type="file"
@@ -151,19 +159,17 @@ export default function UploadAndDetect({ onSelect, onReadMore, onGoToMain }) {
       )}
 
       {/* 스캔/결과 화면 */}
-      {phase !== 'idle' && (
+      {phase === 'scanning' || phase === 'done' ? (
         <div className="scan-wrap">
           <h2 className={`scan-title ${done ? (hasDetection ? 'hot' : 'ok') : ''}`}>
             {headerText}
           </h2>
-
           <div className="scan-table">
             <div className="scan-head">
               <div className="col name">NAME</div>
               <div className="col date">DATE</div>
               <div className="col err">DETECTED ERROR</div>
             </div>
-
             <div className="scan-body">
               {rows.map((r, i) => (
                 <div className="scan-row" key={`${r.name}-${i}`}>
@@ -171,7 +177,7 @@ export default function UploadAndDetect({ onSelect, onReadMore, onGoToMain }) {
                     <DocxIcon />
                     <span className="fname" title={r.name}>{r.name}</span>
                   </div>
-                  <div className="col date">{r.date || '·'}</div>
+                  <div className="col date">{r.date}</div>
                   <div className="col err">
                     <span className={`dot ${done && r.willDetect ? 'on' : ''}`} />
                   </div>
@@ -179,29 +185,73 @@ export default function UploadAndDetect({ onSelect, onReadMore, onGoToMain }) {
               ))}
             </div>
           </div>
-
-          {/* 진행바 */}
           <div className="scan-progress">
-            <div className="bar">
-              <div className="fill" style={{ width: `${progress}%` }} />
-            </div>
-            <div className="label">{scanning ? 'Scanning ...' : 'Completed'}</div>
-          </div>
+            {scanning && (
+              <>
+                <div className="bar">
+                  <div className="fill" style={{ width: `${progress}%` }} />
+                </div>
+                <div className="label">Scanning ...</div>
+              </>
+            )}
 
-          {/* CTA */}
-          {done && (
-            <div className="scan-cta">
-              {hasDetection ? (
-                <Button size="md" onClick={onReadMore}>
-                  Read more...
-                </Button>
-              ) : (
-                <Button size="md" onClick={handleGoToMain}>
-                  Go to main
-                </Button>
-              )}
+            {done && (
+              <div className="scan-actions">
+                {hasDetection ? (
+                  <Button size="md" className="btn-inline" onClick={() => setPhase('details')}>
+                    Read more...
+                  </Button>
+                ) : (
+                  <Button size="md" className="btn-inline" onClick={handleGoToMain}>
+                    Go to main
+                  </Button>
+                )}
+                <div className="label done">Completed</div>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : null}
+
+      {/* 상세 화면 */}
+      {phase === 'details' && (
+        <div className="dd-body">
+        <aside className="dd-left">
+          <h3>DETECTED LOG</h3>
+          <ul>
+            {rows.map((f) => (         
+              <li
+                key={f.name}
+                className={activeFile === f.name ? 'active' : ''}
+                onClick={() => setActiveFile(f.name)}
+                title={f.name}
+              >
+                {f.name}
+              </li>
+            ))}
+          </ul>
+        </aside>
+
+          <section className="dd-right">
+            <div className="dd-right-head">
+              {activeFile ? `${activeFile} : ${sampleDetections.length} Detected` : '파일을 선택하세요'}
             </div>
-          )}
+            <div className="dd-grid">
+              {activeFile &&
+                sampleDetections.map((det) => (
+                  <div key={det.id} className="dd-card">
+                    <div className="dd-badge">
+                      DETECTED ERROR {det.id}. {detectionMap[det.type]?.label}
+                    </div>
+                    <div className="dd-keyword">
+                      KEYWORD : {det.keyword}
+                    </div>
+                    <p>{detectionMap[det.type]?.summary}</p>
+                  </div>
+                ))}
+            </div>
+            <Button size="sm" onClick={handleGoToMain}>Go to main</Button>
+          </section>
         </div>
       )}
     </Box>
