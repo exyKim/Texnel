@@ -1,12 +1,10 @@
 import React from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-
 import MenuBar from './component/MenuBar.jsx'; 
 import About from './pages/About.jsx';
 import UploadAndDetect from './pages/Upload&Detect.jsx';
 import Information from './pages/Information.jsx';
 import Guide from './pages/Guide.jsx';
-
 import './App.css';
 
 export default function App() {

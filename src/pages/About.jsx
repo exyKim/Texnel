@@ -50,7 +50,7 @@ export default function About() {
           </button>
         </div>
 
-        {/* ===== 소개 모드 ===== */}
+
         {!showDetails && (
           <div className="about-inner">
             <div className="tab-content">
