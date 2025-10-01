@@ -30,7 +30,6 @@
 
 .ud-dropzone--active {
   border-color: #ffb944;
-  box-shadow: 0 0 0 3px rgba(255,185,68,0.12) inset;
 }
 
 .ud-icons {
@@ -136,7 +135,6 @@
   width: calc(100% - 70px);
   max-width: 800px;
   margin: 0 auto 12px;  /* 프로그래스바와 간격 조금 */
-  box-shadow: 0 6px 24px rgba(0, 0, 0, .35);
   display: flex;
   flex-direction: column;
 }
@@ -181,7 +179,7 @@
 .col.name {
   display: flex;
   align-items: center;
-  justify-self: start;
+  justify-self: center;
   gap: 12px;
   min-width: 0;              /* grid cell 축소 허용 */
   text-align: left;
@@ -215,7 +213,6 @@
 }
 .dot.on {
   background: #ffb944;
-  box-shadow: 0 0 10px rgba(255,185,68,.45), inset 0 0 0 2px rgba(0,0,0,.12);
 }
 
 /* ===== Progress / actions ===== */
@@ -232,6 +229,7 @@
 }
 .scan-actions {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -241,6 +239,7 @@
 .btn-inline {
   width: auto;
   min-width: 160px;
+  margin-top: 2rem;
   padding: .6rem 1.25rem;
 }
 
@@ -352,4 +351,22 @@
   font-size: 0.9rem;
   line-height: 1.4;
   opacity: 0.85;
+}
+
+
+
+/* Detect-Result */
+
+.dt-title {
+    font-size: 2rem;
+    color: #ffffff;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.3rem;
+}
+
+.dt-date {
+    font-size: 1rem;
+    color: #ffffff;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.3rem;
 }
