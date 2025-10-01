@@ -216,42 +216,43 @@ export default function UploadAndDetect() {
       {/* 상세 화면 */}
       {phase === 'details' && (
         <div className="dd-body">
-        <aside className="dd-left">
-          <h3>DETECTED LOG</h3>
-          <ul>
-            {rows.map((f) => (         
-              <li
-                key={f.name}
-                className={activeFile === f.name ? 'active' : ''}
-                onClick={() => setActiveFile(f.name)}
-                title={f.name}
-              >
-                {f.name}
-              </li>
-            ))}
-          </ul>
-        </aside>
+          <div className="dt-title">DETAILS</div>
+          <aside className="dd-left">
+            <h3>DETECTED LOG</h3>
+            <ul>
+              {rows.map((f) => (         
+                <li
+                  key={f.name}
+                  className={activeFile === f.name ? 'active' : ''}
+                  onClick={() => setActiveFile(f.name)}
+                  title={f.name}
+                >
+                  {f.name}
+                </li>
+              ))}
+            </ul>
+          </aside>
 
-          <section className="dd-right">
-            <div className="dd-right-head">
-              {activeFile ? `${activeFile} : ${sampleDetections.length} Detected` : '파일을 선택하세요'}
-            </div>
-            <div className="dd-grid">
-              {activeFile &&
-                sampleDetections.map((det) => (
-                  <div key={det.id} className="dd-card">
-                    <div className="dd-badge">
-                      DETECTED ERROR {det.id}. {detectionMap[det.type]?.label}
+            <section className="dd-right">
+              <div className="dd-right-head">
+                {activeFile ? `${activeFile} : ${sampleDetections.length} Detected` : '파일을 선택하세요'}
+              </div>
+              <div className="dd-grid">
+                {activeFile &&
+                  sampleDetections.map((det) => (
+                    <div key={det.id} className="dd-card">
+                      <div className="dd-badge">
+                        DETECTED ERROR {det.id}. {detectionMap[det.type]?.label}
+                      </div>
+                      <div className="dd-keyword">
+                        KEYWORD : {det.keyword}
+                      </div>
+                      <p>{detectionMap[det.type]?.summary}</p>
                     </div>
-                    <div className="dd-keyword">
-                      KEYWORD : {det.keyword}
-                    </div>
-                    <p>{detectionMap[det.type]?.summary}</p>
-                  </div>
-                ))}
-            </div>
-            <Button size="sm" onClick={handleGoToMain}>Go to main</Button>
-          </section>
+                  ))}
+              </div>
+              <Button size="sm" onClick={handleGoToMain}>Go to main</Button>
+            </section>
         </div>
       )}
     </Box>
