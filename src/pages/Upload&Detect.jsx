@@ -214,8 +214,6 @@ export default function UploadAndDetect() {
       ) : null}
 
       {/* 상세 화면 */}
-      <div className='dt-title'>DETAILS</div>
-      <div className="col date">{r.date}</div>
       {phase === 'details' && (
         <div className="dd-body">
         <aside className="dd-left">

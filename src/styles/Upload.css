@@ -179,17 +179,28 @@
 .col.name {
   display: flex;
   align-items: center;
-  justify-self: center;
+  justify-self: start;        /* 왼쪽 정렬 */
+  justify-content: flex-start;/* 내부 콘텐츠도 왼쪽 정렬 */
   gap: 12px;
   min-width: 0;              /* grid cell 축소 허용 */
   text-align: left;
+  overflow: hidden;          /* 자식이 옆 컬럼으로 튀는 것 방지 */
+  max-width: 100%;           /* 그리드 트랙 폭을 넘지 않도록 */
+  box-sizing: border-box;
+}
+.scan-head .col.name {
+  justify-self: center;      /* 헤더 셀 자체는 가운데 배치 */
+  justify-content: center;   /* 헤더 텍스트도 가운데 정렬 */
+  text-align: center;
 }
 .col.name svg { flex: 0 0 26px; } /* 아이콘 고정폭 */
 
 .fname {
-  flex: 1 1 0;               /* 남은 영역만 차지 */
+  flex: 1 1 auto;            /* 남은 영역을 차지하되 필요시 축소 */
+  display: block;            /* ellipsis가 안정적으로 동작하도록 블록화 */
   min-width: 0;              /* ellipsis 가능 */
   max-width: 100%;
+  width: 100%;               /* 부모 flex 영역에 꼭 맞춤 */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -364,9 +375,3 @@
     margin-bottom: 0.3rem;
 }
 
-.dt-date {
-    font-size: 1rem;
-    color: #ffffff;
-    letter-spacing: 0.08em;
-    margin-bottom: 0.3rem;
-}
