@@ -101,9 +101,6 @@
 }
 
 
-/* --- Scan panel styles --- */
-
-/* ===== Scan panel (alignment tuned) ===== */
 
 .scan-wrap {
   color: #e6e6e6;
@@ -120,27 +117,23 @@
 }
 
 .scan-title.hot {
-  color: #ff6a00; /* DETECTED! */
+  color: #ff6a00;
 }
 
 .scan-title.ok {
-  color: #00d66b; /* NO DETECTED! */
+  color: #00d66b;
 }
 
-/* 테이블 컨테이너: Box 안에서 가운데 정렬 */
 .scan-table {
   background: #1e2127;
   border-radius: 14px;
   padding: 18px;
   width: calc(100% - 70px);
   max-width: 800px;
-  margin: 0 auto 12px;  /* 프로그래스바와 간격 조금 */
+  margin: 0 auto 12px;
   display: flex;
   flex-direction: column;
 }
-/* ===== Scan table ===== */
-
-/* 컬럼 그리드: 이름은 유동, DATE 200px, ERROR 200px */
 .scan-head,
 .scan-row {
   display: grid;
@@ -158,8 +151,8 @@
 }
 
 .scan-body {
-  --row-h: 56px;                 /* 1행 높이 */
-  max-height: calc(var(--row-h) * 3); /* 보여줄 행수(3행) */
+  --row-h: 56px;
+  max-height: calc(var(--row-h) * 3);
   overflow-y: auto;
   margin-top: 8px;
 }
@@ -168,6 +161,7 @@
   min-height: var(--row-h);
   padding: 14px 8px;
   border-bottom: 1px dashed rgba(255, 255, 255, .06);
+  overflow: hidden;            /* 행 단위로도 클립 (격자 밖으로 넘침 방지) */
 }
 .scan-body .scan-row:last-child { border-bottom: none; }
 
@@ -175,20 +169,26 @@
 .scan-body::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
 .scan-body::-webkit-scrollbar-track { background: transparent; }
 
-/* 셀 정렬 & 파일명 말줄임 */
 .col.name {
   display: flex;
   align-items: center;
   justify-self: center;
   gap: 12px;
-  min-width: 0;              /* grid cell 축소 허용 */
+  min-width: 0;
   text-align: left;
 }
-.col.name svg { flex: 0 0 26px; } /* 아이콘 고정폭 */
+.scan-body .col.name {
+  justify-self: start;
+  width: 100%;               /* 그리드 트랙 폭을 꽉 채워 ellipsis 동작 보장 */
+  overflow: hidden;
+  min-width: 0;
+}
+.col.name svg { flex: 0 0 26px; }
 
 .fname {
-  flex: 1 1 0;               /* 남은 영역만 차지 */
-  min-width: 0;              /* ellipsis 가능 */
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
   max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
@@ -362,5 +362,6 @@
     color: #ffffff;
     letter-spacing: 0.08em;
     margin-bottom: 0.3rem;
+  text-align: left;
 }
 
