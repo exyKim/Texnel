@@ -276,12 +276,19 @@
   display: grid;
   grid-template-columns: 260px 1fr;
   gap: 1rem;
-  min-height: 520px;
+  min-height: 300px;
+  max-height: 24rem;
+  overflow: hidden;
 }
 .dd-left {
   background: #111820;
   border-radius: 12px;
   padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  height: 22rem;
+  min-height: 30rem;
+  overflow: hidden;
 }
 .dd-left h3 {
   font-size: 1rem;
@@ -291,8 +298,9 @@
 .dd-left ul {
   list-style: none;
   margin: 0; padding: 0;
-  max-height: 460px;
+  max-height: 100%;
   overflow-y: auto;
+  flex: 1 1 auto;
 }
 .dd-left li {
   padding: 0.6rem 0.8rem;
@@ -310,37 +318,44 @@
 .dd-right {
   background: #0b0f14;
   border-radius: 12px;
+  height: 22rem;
   padding: 1rem;
   display: flex;
   flex-direction: column;
+  gap: 1rem;
   min-width: 0;
+  min-height: 30rem;
+  overflow: hidden;
 }
 .dd-right-head {
   font-weight: 700;
-  margin-bottom: 0.75rem;
+  margin: 0;
 }
 .dd-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
   overflow-y: auto;
-  padding-right: 0.25rem;
-  max-height: 460px;
+  padding-right: 0; 
+  height: 9rem;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 @media (max-width: 860px) {
   .dd-body { grid-template-columns: 1fr; }
   .dd-grid { grid-template-columns: 1fr; }
 }
 .dd-card {
-  background: #141a22;
-  border-radius: 12px;
+  background: #33373d;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  height: 8rem;
   padding: 1rem;
+  border-radius: 10px;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
 }
 .dd-badge {
   font-size: 0.85rem;
   font-weight: 600;
-  margin-bottom: 0.5rem;
 }
 .dd-keyword {
   font-weight: 700;
@@ -353,10 +368,6 @@
   opacity: 0.85;
 }
 
-
-
-/* Detect-Result */
-
 .dt-title {
     font-size: 2rem;
     color: #ffffff;
@@ -364,4 +375,24 @@
     margin-bottom: 0.3rem;
   text-align: left;
 }
+
+.dd-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0.5rem 0.75rem 1rem;
+}
+.dd-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+.dd-header-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.dd-head-btn { padding: 0.4rem 0.8rem; }
+.scan-date { white-space: nowrap; }
 

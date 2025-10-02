@@ -215,23 +215,34 @@ export default function UploadAndDetect() {
 
       {/* 상세 화면 */}
       {phase === 'details' && (
-        <div className="dd-body">
-          <div className="dt-title">DETAILS</div>
-          <aside className="dd-left">
-            <h3>DETECTED LOG</h3>
-            <ul>
-              {rows.map((f) => (         
-                <li
-                  key={f.name}
-                  className={activeFile === f.name ? 'active' : ''}
-                  onClick={() => setActiveFile(f.name)}
-                  title={f.name}
-                >
-                  {f.name}
-                </li>
-              ))}
-            </ul>
-          </aside>
+        <div className="dd-wrap">
+          <header className="dd-header">
+            <div className="dd-header-left">
+              <div className="dt-title">DETAILS</div>
+            </div>
+            <div className="dd-header-right">
+              <span className="scan-date">Scan date : {fmtDate()} 12:01:03 AM</span>
+              <Button size="sm" className="dd-head-btn" onClick={handleGoToMain}>Go to main</Button>
+              <Button size="sm" className="dd-head-btn">Clean up</Button>
+            </div>
+          </header>
+
+          <div className="dd-body">
+            <aside className="dd-left">
+              <h3>DETECTED LOG</h3>
+              <ul>
+                {rows.map((f) => (
+                  <li
+                    key={f.name}
+                    className={activeFile === f.name ? 'active' : ''}
+                    onClick={() => setActiveFile(f.name)}
+                    title={f.name}
+                  >
+                    {f.name}
+                  </li>
+                ))}
+              </ul>
+            </aside>
 
             <section className="dd-right">
               <div className="dd-right-head">
@@ -241,18 +252,14 @@ export default function UploadAndDetect() {
                 {activeFile &&
                   sampleDetections.map((det) => (
                     <div key={det.id} className="dd-card">
-                      <div className="dd-badge">
-                        DETECTED ERROR {det.id}. {detectionMap[det.type]?.label}
-                      </div>
-                      <div className="dd-keyword">
-                        KEYWORD : {det.keyword}
-                      </div>
+                      <div className="dd-badge">DETECTED ERROR {det.id}. {detectionMap[det.type]?.label}</div>
+                      <div className="dd-keyword">KEYWORD : {det.keyword}</div>
                       <p>{detectionMap[det.type]?.summary}</p>
                     </div>
                   ))}
               </div>
-              <Button size="sm" onClick={handleGoToMain}>Go to main</Button>
             </section>
+          </div>
         </div>
       )}
     </Box>

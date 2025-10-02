@@ -24,8 +24,7 @@ export default function Guide() {
           <hr />
 
           <p>
-            클린업 기능은 <strong>LLM(대형 언어 모델)</strong>을 활용해 악성 구간을
-            파악하고, 백엔드에서 해당 부분을 제거하여 깨끗한 문서로 만들어 줍니다.
+            클린업 기능은 <strong>LLM(대형 언어 모델)</strong>을 활용해 해당 부분을 제거하여 깨끗한 문서로 만들어 줍니다.
           </p>
           <p>
             Texnel은 여러분의 <strong>안전한 문서 작업 환경</strong>을 위해 노력합니다.
