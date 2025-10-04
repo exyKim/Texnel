@@ -4,6 +4,7 @@ import Button from '../component/Button.jsx';
 import Alert from '../component/Alert.jsx';
 import uploadSvg from '../images/upload.svg';
 import fileInputAlert from '../images/fileInputAlert.svg';
+import cleanupAlert from '../images/cleanupAlert.svg';
 import '../styles/Upload.css';
 
 // --- API endpoints
@@ -322,31 +323,93 @@ export default function UploadAndDetect() {
     }
   }, [phase, resultsReady, progress]);
 
-  // 드롭존 핸들러들
+  const handleGoToMain = useCallback(() => {
+    setRows([]);
+    setProgress(0);
+    setTotalCount(0);
+    setDoneCount(0);
+    setPhase('idle');
+    setDragging(false);
+    setActiveFile(null);
+    setResultsReady(false);
+    setShowInvalidType(false);
+    setShowCleanupConfirm(false);
+    setIsCleaning(false);
+    setIsCleanComplete(false);
+    setCleanupProgress(0);
+  }, []);
+
+    // 드롭존 핸들러들
 const onDrop = (e) => {
-  e.preventDefault();
-  setDragging(false);
-  if (e.dataTransfer?.files?.length) handleFiles(e.dataTransfer.files);
-};
-const onDragOver = (e) => { e.preventDefault(); setDragging(true); };
-const onDragLeave = (e) => { e.preventDefault(); setDragging(false); };
-const onChange = (e) => { handleFiles(e.target.files); e.target.value = ''; };
+    e.preventDefault();
+    setDragging(false);
+    if (e.dataTransfer?.files?.length) handleFiles(e.dataTransfer.files);
+  };
+  const onDragOver = (e) => { e.preventDefault(); setDragging(true); };
+  const onDragLeave = (e) => { e.preventDefault(); setDragging(false); };
+  const onChange = (e) => { handleFiles(e.target.files); e.target.value = ''; };
 
-// 상태 파생 값들 (JSX에서 사용)
-const scanning = phase === 'scanning';
-const done = phase === 'done';
-const hasError = rows.some((r) => !!r.error);
-const hasDetection = rows.some((r) => (r.detections?.length ?? 0) > 0);
+  // 상태 파생 값들 (JSX에서 사용)
+  const scanning = phase === 'scanning';
+  const done = phase === 'done';
+  const hasError = rows.some((r) => !!r.error);
+  const hasDetection = rows.some((r) => (r.detections?.length ?? 0) > 0);
 
-const headerText = scanning
-  ? '탐지 중이니 잠시 기다려 주세요.'
-  : done
-    ? (hasError ? 'SCAN ERROR' : (hasDetection ? 'DETECTED!' : 'NO DETECTED!'))
-    : null;
+  const headerText = scanning
+    ? '탐지 중이니 잠시 기다려 주세요.'
+    : done
+      ? (hasError ? 'SCAN ERROR' : (hasDetection ? 'DETECTED!' : 'NO DETECTED!'))
+      : null;
 
-// details 화면용
-const activeRow = rows.find(r => r.name === activeFile);
-const activeDetections = activeRow?.detections || [];
+  // details 화면용
+  const activeRow = rows.find(r => r.name === activeFile);
+  const activeDetections = activeRow?.detections || [];
+
+  // Clean up 확인 모달 상태/핸들러 추가  ⬇️ 이 블록을 UploadAndDetect 내부에 넣어주세요
+  const [showCleanupConfirm, setShowCleanupConfirm] = useState(false);
+  const openCleanupConfirm  = useCallback(() => setShowCleanupConfirm(true), []);
+  const [isCleaning, setIsCleaning] = useState(false);        // 진행중 화면
+  const [isCleanComplete, setIsCleanComplete] = useState(false); // 완료 화면
+  const [cleanupProgress, setCleanupProgress] = useState(0);  // 진행률(더미)
+  const closeCleanupConfirm = useCallback(() => setShowCleanupConfirm(false), []);
+
+  const confirmCleanup = useCallback(() => {
+    console.log('[cleanup] confirm for', activeFile); // TODO: 실제 클린업 로직 연결 예정
+    setShowCleanupConfirm(false);
+    setIsCleanComplete(false);
+    setIsCleaning(true);
+    setCleanupProgress(0);
+
+    // 2초짜리 더미 프로그레스 (나중에 AI 연동 시 이 부분만 교체)
+    const duration = 2000;
+    const start = Date.now();
+    const timer = setInterval(() => {
+      const p = Math.min(100, Math.round(((Date.now() - start) / duration) * 100));
+      setCleanupProgress(p);
+      if (p >= 100) {
+        clearInterval(timer);
+        // 2) 완료 화면으로 전환
+        setIsCleaning(false);
+        setIsCleanComplete(true);
+      }
+    }, 16);
+  }, [activeFile]);
+
+  const handleDownloadSanitized = useCallback(async () => {
+  try {
+    const inv = getIpcInvoke();
+    if (inv) {
+      // 실제 산출물 경로를 main에서 받아 열기(추후 교체)
+      const filePath = await inv('get-sanitized-file', { name: activeFile });
+      if (filePath) { await inv('open-path', filePath); return; }
+    }
+  } catch {}
+  // 데모용 더미 다운로드
+  const blob = new Blob([`Sanitized file: ${activeFile}\n(dummy)`], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = (activeFile || 'sanitized') + '.txt';
+  a.click(); URL.revokeObjectURL(url);
+}, [activeFile]);
 
 
   // 리턴
@@ -447,53 +510,126 @@ const activeDetections = activeRow?.detections || [];
 
       {/* 상세 화면 */}
       {phase === 'details' && (
-        <div className="dd-wrap">
-          <header className="dd-header">
-            <div className="dd-header-left">
-              <div className="dt-title">DETAILS</div>
-              <div className="scan-date">Scan date : {fmtDate()}</div>
-            </div>
-            <div className="dd-header-right">
-              <Button size="sm" className="dd-head-btn" onClick={handleGoToMain}>Go to main</Button>
-              <Button size="sm" className="dd-head-btn">Clean up</Button>
-            </div>
-          </header>
+  <div className="dd-wrap">
+    <header className="dd-header">
+      <div className="dd-header-left">
+        <div className="dt-title">DETAILS</div>
+        <div className="scan-date">Scan date : {fmtDate()}</div>
+      </div>
+      <div className="dd-header-right">
+        <Button
+          size="sm"
+          className="dd-head-btn"
+          onClick={handleGoToMain}
+          disabled={isCleaning}
+        >
+          Go to main
+        </Button>
+        <Button
+          size="sm"
+          className="dd-head-btn"
+          onClick={openCleanupConfirm}
+          disabled={!activeFile || isCleaning || isCleanComplete}
+        >
+          Clean up
+        </Button>
+      </div>
+    </header>
 
-          <div className="dd-body">
-            <aside className="dd-left">
-              <h3>DETECTED LOG</h3>
-              <ul>
-                {rows.map((f) => (
-                  <li
-                    key={f.name}
-                    className={activeFile === f.name ? 'active' : ''}
-                    onClick={() => setActiveFile(f.name)}
-                    title={f.name}
-                  >
-                    <DocxIcon />
-                    <span>{f.name}</span>
-                  </li>
-                ))}
-              </ul>
-            </aside>
+    {/* ① 기본 상세 화면 (클린업 전) */}
+    {!isCleaning && !isCleanComplete && (
+      <div className="dd-body">
+        <aside className="dd-left">
+          <h3>DETECTED LOG</h3>
+          <ul>
+            {rows.map((f) => (
+              <li
+                key={f.name}
+                className={activeFile === f.name ? 'active' : ''}
+                onClick={() => setActiveFile(f.name)}
+                title={f.name}
+              >
+                <DocxIcon />
+                <span>{f.name}</span>
+              </li>
+            ))}
+          </ul>
+        </aside>
 
-            <section className="dd-right">
-              <div className="dd-right-head">
-                {activeFile ? `${activeFile} : ${activeDetections.length} Detected` : '파일을 선택하세요'}
-              </div>
-              <div className="dd-grid">
-                {activeFile &&
-                  activeDetections.map((det) => (
-                    <div key={det.id} className="dd-card">
-                      <div className="dd-badge">DETECTED ERROR {det.id}. {det.type}</div>
-                      <div className="dd-keyword">KEYWORD : {det.keyword}</div>
-                    </div>
-                  ))}
-              </div>
-            </section>
+        <section className="dd-right">
+          <div className="dd-right-head">
+            {activeFile
+              ? `${activeFile} : ${activeDetections.length} Detected`
+              : '파일을 선택하세요'}
+          </div>
+          <div className="dd-grid">
+            {activeFile &&
+              activeDetections.map((det) => (
+                <div key={det.id} className="dd-card">
+                  <div className="dd-badge">
+                    DETECTED ERROR {det.id}. {det.type}
+                  </div>
+                  <div className="dd-keyword">KEYWORD : {det.keyword}</div>
+                </div>
+              ))}
+          </div>
+        </section>
+      </div>
+    )}
+
+    {/* ② Clean up… 진행 화면 (2초) */}
+    {isCleaning && (
+      <div
+        className="cleanup-screen"
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '360px',
+          gap: '20px',
+        }}
+      >
+        <div style={{ fontSize: '28px', letterSpacing: '2px', color: '#FFA02B' }}>
+          Clean up....
+        </div>
+        <div className="scan-progress" style={{ width: '78%' }}>
+          <div className="bar">
+            <div className="fill" style={{ width: `${cleanupProgress}%` }} />
           </div>
         </div>
-      )}
+      </div>
+    )}
+
+    {/* ③ 완료 화면 + 다운로드 버튼 */}
+    {isCleanComplete && (
+      <div
+        className="cleanup-done"
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '360px',
+          gap: '24px',
+        }}
+      >
+        <div style={{ fontSize: '28px', letterSpacing: '2px', color: '#FFA02B' }}>
+          Complete
+        </div>
+        <div className="scan-progress" style={{ width: '78%' }}>
+          <div className="bar">
+            <div className="fill" style={{ width: '100%' }} />
+          </div>
+        </div>
+        <Button variant="ghost" size="sm" onClick={handleDownloadSanitized}>
+          Download
+        </Button>
+      </div>
+    )}
+  </div>
+)}
+
 
       {/* pop up alert */}
       {showInvalidType && (
@@ -507,6 +643,24 @@ const activeDetections = activeRow?.detections || [];
             <Button size="sm" variant="ghost" onClick={closeInvalidTypeAlert}>
               CLOSE ✕
             </Button>
+          </div>
+        </Alert>
+      )}
+
+      {showCleanupConfirm && (
+        <Alert
+          color="#FFA02B"
+          title="Clean up?"
+          icon={<img src={cleanupAlert} alt="" />}
+        >
+          <p style={{ marginBottom: '0.5rem' }}>
+            <strong>{activeFile || '선택된 파일 없음'}</strong>
+          </p>
+          <p>해당 문서를 클린업 시키겠습니까?</p>
+
+          <div className="alert-actions" style={{ gap: '12px' }}>
+            <Button size="sm" onClick={confirmCleanup}>Yes</Button>
+            <Button size="sm" variant="ghost" onClick={closeCleanupConfirm}>Close ✕</Button>
           </div>
         </Alert>
       )}
