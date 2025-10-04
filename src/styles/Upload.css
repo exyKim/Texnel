@@ -281,7 +281,7 @@
   overflow: hidden;
 }
 .dd-left {
-  background: #111820;
+  background: #282A2E;
   border-radius: 12px;
   padding: 1rem;
   display: flex;
@@ -316,15 +316,14 @@
   outline: 1px solid rgba(96,165,250,.35);
 }
 .dd-right {
-  background: #0b0f14;
+  background: #282A2E;
   border-radius: 12px;
-  height: 22rem;
   padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
   min-width: 0;
-  min-height: 30rem;
+  min-height: 0;
   overflow: hidden;
 }
 .dd-right-head {
@@ -333,11 +332,11 @@
 }
 .dd-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-  overflow-y: auto;
+  grid-template-columns: repeat(2, 1fr);         /* 1 2 / 3 4 */
+  grid-auto-rows: 8.5rem;                         /* 카드 높이 크게 고정 */
+  gap: 1rem;                                      /* 카드 간격 추가 */
+  overflow-y: auto;                               /* 넘치면 스크롤 */
   padding-right: 0; 
-  height: 9rem;
   flex: 1 1 auto;
   min-height: 0;
 }
@@ -348,8 +347,9 @@
 .dd-card {
   background: #33373d;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  height: 8rem;
   padding: 1rem;
+  height: 100%;                                   /* 고정 행 높이 채움 */
+  overflow: hidden;                               /* 내용 과다 시 잘라서 균일 유지 */
   border-radius: 10px;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
 }
@@ -388,6 +388,13 @@
   gap: 1rem;
   margin-bottom: 0.5rem;
 }
+
+.dd-header-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .dd-header-right {
   display: inline-flex;
   align-items: center;

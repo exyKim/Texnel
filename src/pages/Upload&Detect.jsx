@@ -219,9 +219,9 @@ export default function UploadAndDetect() {
           <header className="dd-header">
             <div className="dd-header-left">
               <div className="dt-title">DETAILS</div>
+              <div className="scan-date">Scan date : {fmtDate()}</div>
             </div>
             <div className="dd-header-right">
-              <span className="scan-date">Scan date : {fmtDate()} 12:01:03 AM</span>
               <Button size="sm" className="dd-head-btn" onClick={handleGoToMain}>Go to main</Button>
               <Button size="sm" className="dd-head-btn">Clean up</Button>
             </div>
@@ -238,7 +238,8 @@ export default function UploadAndDetect() {
                     onClick={() => setActiveFile(f.name)}
                     title={f.name}
                   >
-                    {f.name}
+                    <DocxIcon />
+                    <span>{f.name}</span>
                   </li>
                 ))}
               </ul>
