@@ -50,7 +50,6 @@ export default function About() {
           </button>
         </div>
 
-
         {!showDetails && (
           <div className="about-inner">
             <div className="tab-content">
@@ -126,51 +125,59 @@ export default function About() {
 
         {/* ===== 상세 카드 모드 (Box 내부 요소 갈아끼움) ===== */}
         {showDetails && activeTab === 'hwp' && (
-          <div className="about-grid">
+          <div className="about-grid about-grid--hwp">
             <AboutBox
+              order={1}
               icon={HwpMz}
               title="실행 파일 삽입"
-              description="문서 내부에 실행파일('MZ')을 몰래 삽입해 두는 기법. 문서가 열리며 추출·실행되어 감염으로 이어질 수 있음."
+              description="문서 내부에 실행파일(“MZ”)을 몰래 삽입해 두는 기법입니다. 문서가 열리면서 실행파일이 추출·실행되어 악성코드에 감염될 수 있습니다."
             />
             <AboutBox
+              order={2}
               icon={HwpEps}
               title="PostScript/EPS 포함"
-              description="EPS/PS 그래픽 포맷의 취약점 악용. 단순 열람만으로도 원격 코드 실행(RCE) 발생 가능."
+              description="EPS/PS 같은 그래픽 포맷을 이용해 문서 뷰어나 변환기의 취약점을 노립니다. 단순 열람만으로도 원격 코드 실행(RCE)으로 이어질 수 있습니다."
             />
             <AboutBox
+              order={3}
               icon={HwpIp}
               title="원시 IP 사용"
-              description="도메인 대신 원시 IP 직접 연결로 C2 통신/악성 다운로드 유도."
+              description="정상적인 도메인 대신 IP 주소를 직접 연결해 클릭 시 공격자의 C2 서버 혹은 악성 파일 다운로드로 이어질 수 있습니다."
             />
             <AboutBox
+              order={4}
               icon={HwpEx}
               title="이중확장자 파일"
-              description="report.pdf.exe처럼 겉 확장자로 속여 사용자 실행 유도."
+              description="report.pdf.exe처럼 겉으로는 안전해 보이는 확장자를 덧씌워 사용자를 속이는 방식입니다. 사용자가 착각해 실행하면 곧바로 악성 프로그램이 실행됩니다."
             />
           </div>
         )}
 
         {showDetails && activeTab === 'docx' && (
-          <div className="about-grid">
+          <div className="about-grid about-grid--docx">
             <AboutBox
+              order={1}
               icon={DocFile}
               title="외부 파일 참조"
-              description="원격 서버에서 템플릿/파일을 불러와 실행하는 기법."
+              description="문서가 열릴 때 원격 서버에서 악성 템플릿을 불러와 실행하는 방식입니다. 사용자는 눈치채기 어렵습니다."
             />
             <AboutBox
+              order={2}
               icon={DocPs}
               title="명령 실행 키워드 포함"
-              description="powershell, cmd 등 실행 키워드가 문서 내부에 숨어 실행을 유도."
+              description="powershell, cmd 같은 명령어가 문서 내부에 숨어있어, 추가 다운로드나 시스템 제어를 시도할 수 있습니다."
             />
             <AboutBox
+              order={3}
               icon={DocDdt}
-              title="DDE/DDEAUTO"
-              description="DDEAUTO 코드 삽입을 통해 다른 프로그램 자동 실행 유도."
+              title="DDEAUTO 코드 삽입"
+              description="DDE(데이터 교환 방식 중 하나) 기능을 악용해 다른 프로그램을 자동 실행하게 만듭니다."
             />
             <AboutBox
+              order={4}
               icon={DocVba}
               title="매크로 포함"
-              description="문서 내 VBA 코드로 악성 동작 수행. 자동실행 매크로 악용."
+              description="매크로 코드가 문서에 포함되어 있어, 문서를 열자마자 자동 실행으로 악성 스크립트를 수행할 수 있습니다."
             />
           </div>
         )}

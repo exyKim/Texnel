@@ -1,36 +1,46 @@
 /* 카드 컨테이너 (고정 크기) */
 .about-box {
-  width: 300px;              /* 고정 */
-  height: 220px;             /* 고정 */
+  width: 220px;              /* 고정 */
+  height: 320px;             /* 고정 */
   background: #282A2E;       /* 요청 색상 */
   border-radius: 16px;
-  padding: 18px;
-  display: flex;
-  gap: 14px;
+  padding: 16px;               /* 패딩 살짝 감소 */
+  /* 레이아웃: 세로 정렬 */
+  display: flex;               /* 그리드 -> 플렉스(세로) */
+  flex-direction: column;
+  align-items: center;         /* 가운데 정렬 */
+  justify-content: flex-start;
+  gap: 12px;
   color: #cfcfcf;
-  box-shadow: 0 8px 18px rgba(0,0,0,0.35);
 }
 
 /* 호버 살짝 띄우기(선택) */
 .about-box:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 22px rgba(0,0,0,0.45);
   transition: transform .16s ease, box-shadow .16s ease;
 }
 
 /* 아이콘 영역 */
+.about-box__icon {
+  /* 그리드 관련 제거, 가운데 배치 */
+  margin: 6px auto 8px;
+}
 .about-box__icon img {
-  width: 48px;
-  height: 48px;
+  width: 96px;                 /* 88 -> 96 */
+  height: 96px;
   display: block;
+  object-fit: contain;            /* SVG 내부 마진 차이 보정 */
 }
 
 /* 텍스트 영역 */
 .about-box__text {
+  /* 그리드 관련 제거 */
+  width: 100%;
+  text-align: center;          /* 제목/본문 가운데 정렬 */
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  overflow: hidden; /* 긴 텍스트 대비 */
+  gap: 8px;
+  overflow: hidden;
 }
 
 /* 제목/부제/본문 */
@@ -40,6 +50,7 @@
   font-weight: 700;
   color: #f7f7f7;
   letter-spacing: .2px;
+  line-height: 1.4;               /* 한글 기준 행간 통일 */
 }
 
 .about-box__subtitle {
@@ -48,19 +59,46 @@
 }
 
 .about-box__desc {
-  margin: 6px 0 0;
+  margin: 0;                   /* 기본 top margin 제거 (중복 방지) */
   font-size: 13px;
   line-height: 1.6;
   color: #cfd3d8;
   display: -webkit-box;
-  -webkit-line-clamp: 4;      /* 고정 높이 안에서 4줄까지만 표시 */
   -webkit-box-orient: vertical;
   overflow: hidden;
+  -webkit-line-clamp: 5;          /* 한글/영문 섞여도 높이 통일 */
+  word-break: keep-all;           /* 한글 단어 중간 줄바꿈 방지 */
+  overflow-wrap: anywhere;        /* 긴 영문/URL 강제 줄바꿈 허용 */
+  line-break: auto;               /* 동아시아 줄바꿈 규칙 */
+}
+
+/* 제목/부제 다음에 오는 본문만 간격 확대 */
+.about-box__title + .about-box__desc,
+.about-box__subtitle + .about-box__desc {
+  margin-top: 12px;            /* 제목 내용 사이 간격 증가 */
 }
 
 /* 그리드(부모 레이아웃) – 4개 배치용 */
 .about-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, 220px) !important; /* 한 줄 고정, About.jsx 인라인 스타일 무시 */
   gap: 24px;
+  justify-content: start;
+}
+
+/* DOCX 카드 전용 보정: HWP와 시각적으로 동일하게 */
+.about-grid--docx .about-box__icon img {
+  transform: scale(1.08); /* DOCX 아이콘 내부 여백 보정 */
+}
+
+.about-grid--docx .about-box__title {
+  line-height: 1.4;
+  letter-spacing: .2px;
+  font-weight: 700;
+}
+
+/* 필요 시 DOCX 본문도 동일 줄수로 고정 (이미 동일하지만 안전하게 명시) */
+.about-grid--docx .about-box__desc {
+  -webkit-line-clamp: 5;
+  word-break: keep-all;
 }

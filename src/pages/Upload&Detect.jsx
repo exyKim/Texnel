@@ -498,7 +498,6 @@ const subscribeIpcProgress = () => {
                     <div key={det.id} className="dd-card">
                       <div className="dd-badge">DETECTED ERROR {det.id}. {det.type}</div>
                       <div className="dd-keyword">KEYWORD : {det.keyword}</div>
-                      <p>{det.summary}</p>
                     </div>
                   ))}
               </div>
