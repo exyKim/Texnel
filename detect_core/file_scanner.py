@@ -227,21 +227,6 @@ def _decode_files_from_json(obj: Any) -> List[Tuple[str, bytes]]:
 
 
 if __name__ == "__main__":
-    """
-    CLI 사용법:
-
-    1) 경로 인자(기존과 동일)
-       python file_scanner.py C:\\tmp\\a.hwp [b.docx ...]
-       또는 path::origName
-       python file_scanner.py C:\\tmp\\a.tmp::for_test.hwp
-
-    2) 표준입력(JSON, Base64)
-       echo '{"files":[{"name":"a.hwp","bytes_b64":"..."}]}' | python file_scanner.py --stdin-json
-
-    3) 표준입력(raw bytes, 단일 파일)
-       type a.hwp | python file_scanner.py --stdin-bytes a.hwp
-       (Linux/macOS) cat a.hwp | python file_scanner.py --stdin-bytes a.hwp
-    """
     args = [s for s in sys.argv[1:] if s]
 
     # 모드 1: --stdin-json

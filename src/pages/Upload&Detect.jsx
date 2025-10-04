@@ -94,6 +94,43 @@ const detectViaScanner = async (file) => {
   return null;
 };
 
+const subscribeIpcResult = () => {
+   const api = getIpcInvoke() && window?.electron;
+   if (!api?.onScanResult) return () => {};
+   const unsub = api.onScanResult(({ name, result }) => {
+     // 부분 결과를 해당 row에 머지
+     setRows(prev => {
+       const next = prev.map(r => r.name === (result?.filename || name)
+         ? { ...r, detections: normalizeDetections(result) }
+         : r
+       );
+       return next;
+     });
+   });
+   return unsub;
+ };
+
+ const subscribeIpcComplete = () => {
+   const api = getIpcInvoke() && window?.electron;
+   if (!api?.onScanComplete) return () => {};
+   const unsub = api.onScanComplete(({ total, results }) => {
+     // 안전망: 누락된 파일이 있으면 한 번 더 병합
+     setRows(prev => {
+       const map = new Map(prev.map(r => [r.name, r]));
+       (results || []).forEach(res => {
+         const key = res?.filename || res?.name;
+         if (!key) return;
+         const existed = map.get(key) || { name: key, date: fmtDate() };
+         map.set(key, { ...existed, detections: normalizeDetections(res) });
+       });
+       return Array.from(map.values());
+     });
+     setResultsReady(true);
+   });
+   return unsub;
+ };
+
+
 // Add: IPC로 여러 파일 한번에 스캔
 const detectFilesViaIPC = async (files) => {
   const invoke = getIpcInvoke();
@@ -171,9 +208,24 @@ export default function UploadAndDetect() {
   const [isDragging, setDragging] = useState(false);
   const [phase, setPhase] = useState('idle');  // idle | scanning | done | details
   const [progress, setProgress] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
+  const [doneCount, setDoneCount] = useState(0);
   const [rows, setRows] = useState([]);        // { name, date, detections?: [] }
   const [activeFile, setActiveFile] = useState(null);
   const [resultsReady, setResultsReady] = useState(false); // Add: gate 'done' until API finished
+
+  const pct = (done, total) => (total ? Math.round((done / total) * 100) : 0);
+
+const subscribeIpcProgress = () => {
+   const api = getIpcInvoke() && window?.electron; // preload에서 expose
+   if (!api?.onScanProgress) return () => {};
+   const unsub = api.onScanProgress((ev) => {
+     // ev: { done, total, name }
+     setDoneCount(ev.done);
+     setProgress(pct(ev.done, ev.total));
+   });
+   return unsub;
+ };
 
   useEffect(() => {
     if (phase !== 'details') return;
@@ -213,11 +265,16 @@ export default function UploadAndDetect() {
     const today = fmtDate();
     setRows(filtered.map((f) => ({ name: f.name, date: today })));
     setProgress(0);
+    setDoneCount(0);
+    setTotalCount(filtered.length);
     setResultsReady(false);
     setPhase('scanning');
 
     // 1) IPC 우선 시도
     try {
+      const unsubProgress = subscribeIpcProgress();
+      const unsubResult   = subscribeIpcResult();
+      const unsubComplete = subscribeIpcComplete();
       const ipcResults = await detectFilesViaIPC(filtered);
       if (ipcResults) {
         const merged = filtered.map(f => {
@@ -226,7 +283,13 @@ export default function UploadAndDetect() {
         });
         console.debug('[ipc] merged rows', merged.map(m => ({ name: m.name, cnt: m.detections.length })));
         setRows(merged);
+        setDoneCount(filtered.length);
+        setProgress(100);
         setResultsReady(true);
+        unsubscribe(); 
+        unsubProgress?.();
+        unsubResult?.();
+        unsubComplete?.();
         return;
       }
     } catch (e) {
@@ -234,41 +297,24 @@ export default function UploadAndDetect() {
       // 계속 HTTP 폴백 시도
     }
 
-    // 2) HTTP 폴백(확장자별 엔드포인트)
-    const promises = filtered.map(async (file) => {
+    const results = [];
+    let done = 0;
+    for (const file of filtered) {
       try {
         const detections = await detectFile(file);
-        return { name: file.name, date: today, detections };
+        results.push({ name: file.name, date: today, detections });
       } catch (e) {
         console.error('[detect] FAIL', file.name, e);
-        return { name: file.name, date: today, detections: [], error: String(e?.message || e) };
+        results.push({ name: file.name, date: today, detections: [], error: String(e?.message || e) });
       }
-    });
+      done += 1;
+      setDoneCount(done);
+      setProgress(pct(done, filtered.length));
+    }
+        setRows(results);
+        setResultsReady(true);
+      }, []);
 
-    const results = await Promise.all(promises);
-    setRows(results);
-    setResultsReady(true);
-  }, []);
-
-  // 진행률 애니메이션 (~3s) and gate completion on resultsReady
-  useEffect(() => {
-    if (phase !== 'scanning') return;
-    const id = setInterval(() => {
-      setProgress((p) => {
-        const next = Math.min(100, p + 1);
-        if (next === 100) {
-          clearInterval(id);
-          if (resultsReady) {
-            setTimeout(() => setPhase('done'), 250);
-          }
-        }
-        return next;
-      });
-    }, 30); // ~3 seconds to 100%
-    return () => clearInterval(id);
-  }, [phase, resultsReady]);
-
-  // If API finishes after progress hit 100, complete now
   useEffect(() => {
     if (phase === 'scanning' && resultsReady && progress >= 100) {
       const t = setTimeout(() => setPhase('done'), 250);
