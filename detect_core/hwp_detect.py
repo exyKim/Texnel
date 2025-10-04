@@ -3,7 +3,10 @@ import os
 import re
 import json
 import sys
+import logging
+import traceback
 from typing import Optional, List, Dict
+from pathlib import Path
 
 # --- 공격 라벨 (영문/한글 동시 표기) ---
 ATTACK_LABELS_EN = {
@@ -139,23 +142,63 @@ def hwp_raw_ip(file_path: str) -> Optional[Dict]:
         return None
     return None
 
+# 로거 설정: stderr로만 출력 (stdout의 JSON과 분리)
+_logger = logging.getLogger("hwp_detect")
+if not _logger.handlers:
+	# 기존 basicConfig 대신 개별 핸들러 부착(다른 곳에서 root 로거를 설정했어도 항상 출력)
+	log_level = logging.DEBUG if os.getenv("DETECT_LOG", "1") != "0" else logging.INFO
+	handler = logging.StreamHandler(stream=sys.stderr)
+	handler.setFormatter(logging.Formatter("[%(asctime)s][%(levelname)s][%(name)s] %(message)s"))
+	handler.setLevel(log_level)
+	_logger.addHandler(handler)
+	_logger.setLevel(log_level)
+	_logger.propagate = False
+
+def _log_start():
+	try:
+		_logger.info("start %s args=%s cwd=%s py=%s", Path(__file__).name, sys.argv, os.getcwd(), sys.version.split()[0])
+		if len(sys.argv) > 1 and os.path.exists(sys.argv[1]):
+			_logger.info("input=%s size=%d bytes", sys.argv[1], os.path.getsize(sys.argv[1]))
+	except Exception:
+		_logger.debug("pre-log failed", exc_info=True)
+
 # ---- 메인 스캐너 ----
 def scan_hwp(file_path: str) -> List[Dict]:
     checks = [hwp_pe_mz, hwp_eps_ps, hwp_double_ext, hwp_raw_ip]
     findings: List[Dict] = []
     for fn in checks:
         try:
+            _logger.debug("run %s", fn.__name__)
             res = fn(file_path)
+            _logger.debug("%s -> %s", fn.__name__, "HIT" if res else "MISS")
             if res:
                 findings.append(res)
         except Exception:
+            _logger.exception("%s error", fn.__name__)
             continue
+    _logger.info("scan done file=%s hits=%d", file_path, len(findings))
+    try:
+        sys.stderr.flush()
+    except Exception:
+        pass
     return findings
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python scan_hwp_detect.py <file.hwp>")
-        sys.exit(1)
-    path = sys.argv[1]
-    out = scan_hwp(path)
-    print(json.dumps(out, ensure_ascii=False, indent=2))
+	_log_start()
+	try:
+		if len(sys.argv) < 2:
+			print(f"Usage: python {Path(__file__).name} <file.hwp>")
+			sys.exit(1)
+		path = sys.argv[1]
+		out = scan_hwp(path)
+		_logger.info("emit json len=%d", len(out))
+		print(json.dumps(out, ensure_ascii=False, indent=2))
+		try:
+			sys.stdout.flush()
+		except Exception:
+			pass
+	except SystemExit:
+		raise
+	except Exception:
+		_logger.error("unhandled error", exc_info=True)
+		sys.exit(1)

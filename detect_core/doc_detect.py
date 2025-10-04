@@ -4,25 +4,36 @@ import xml.etree.ElementTree as ET
 import re
 import json
 import sys
+import logging
+import traceback
 from typing import Optional
+from pathlib import Path
 
-# --- OpenAI ---
-from openai import OpenAI
-client = OpenAI() # OPENAI_API_KEY
-MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+_logger = logging.getLogger("doc_detect")
+if not _logger.handlers:
+    log_level = logging.DEBUG if os.getenv("DETECT_LOG", "1") != "0" else logging.INFO
+    logging.basicConfig(level=log_level, format="[%(asctime)s][%(levelname)s][%(name)s] %(message)s", stream=sys.stderr)
 
-# 공격 라벨 (영문/한글 동시 표기)
+def _log_start():
+    try:
+        _logger.info("start %s args=%s cwd=%s py=%s", Path(__file__).name, sys.argv, os.getcwd(), sys.version.split()[0])
+        if len(sys.argv) > 1 and os.path.exists(sys.argv[1]):
+            _logger.info("input=%s size=%d bytes", sys.argv[1], os.path.getsize(sys.argv[1]))
+    except Exception:
+        _logger.debug("pre-log failed", exc_info=True)
+
+# 추가: DOCX 전용 공격 라벨(영/한)
 ATTACK_LABELS_EN = {
-    "VBA": "DOCX: VBA Macro",
+    "VBA": "DOCX: Macro (VBA)",
     "TEMPLATE": "DOCX: External Template",
-    "DDE": "DOCX: DDE/DDEAUTO",
+    "DDE": "DOCX: Dynamic Data Exchange",
     "CMD": "DOCX: Suspicious Command",
 }
 ATTACK_LABELS_KO = {
-    "VBA": "DOCX: 매크로 삽입",
-    "TEMPLATE": "DOCX: 외부 템플릿 참조",
-    "DDE": "DOCX: DDE/DDEAUTO 실행",
-    "CMD": "DOCX: 의심 명령 실행",
+    "VBA": "DOCX: 매크로(VBA)",
+    "TEMPLATE": "DOCX: 외부 템플릿",
+    "DDE": "DOCX: DDE 포함",
+    "CMD": "DOCX: 의심 명령 호출",
 }
 
 def _label(key: str) -> str:
@@ -199,18 +210,35 @@ def scan_docx(file_path: str):
     findings = []
     for fn in checks:
         try:
+            _logger.debug("run %s", fn.__name__)
             res = fn(file_path)
+            _logger.debug("%s -> %s", fn.__name__, "HIT" if res else "MISS")
             if res:
                 findings.append(res)
         except Exception:
-            # 개별 탐지 실패는 전체 실패로 보지 않음
+            _logger.exception("%s error", fn.__name__)
             continue
+    _logger.info("scan done file=%s hits=%d", file_path, len(findings))
+    try:
+        sys.stderr.flush()
+    except Exception:
+        pass
     return findings
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python scan_docx_detect.py <file.docx>")
+    _log_start()
+    try:
+        if len(sys.argv) != 2:
+            print("Usage: python scan_docx_detect.py <file.docx>")
+            sys.exit(1)
+        path = sys.argv[1]
+        out = scan_docx(path)
+        _logger.info("emit json len=%d", len(out))
+        print(json.dumps(out, ensure_ascii=False, indent=2))
+        # stdout으로 JSON을 print 합니다.
+        # _logger.info("detections_count=%s", len(detections))
+    except SystemExit:
+        raise
+    except Exception:
+        _logger.error("unhandled error", exc_info=True)
         sys.exit(1)
-    path = sys.argv[1]
-    out = scan_docx(path)
-    print(json.dumps(out, ensure_ascii=False, indent=2))
