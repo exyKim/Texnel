@@ -5,6 +5,7 @@ import Alert from '../component/Alert.jsx';
 import uploadSvg from '../images/upload.svg';
 import fileInputAlert from '../images/fileInputAlert.svg';
 import cleanupAlert from '../images/cleanupAlert.svg';
+import downloadAlert from '../images/downloadAlert.svg';
 import '../styles/Upload.css';
 
 // --- API endpoints
@@ -93,6 +94,7 @@ export default function UploadAndDetect() {
   const [rows, setRows] = useState([]);       // { name, date, detections?, error? }
   const [activeFile, setActiveFile] = useState(null);
   const [resultsReady, setResultsReady] = useState(false);
+  const [showDownloadComplete, setShowDownloadComplete] = useState(false);
 
   const pct = (done, total) => (total ? Math.round((done / total) * 100) : 0);
 
@@ -337,6 +339,7 @@ export default function UploadAndDetect() {
     setIsCleaning(false);
     setIsCleanComplete(false);
     setCleanupProgress(0);
+    setShowDownloadComplete(false);
   }, []);
 
     // 드롭존 핸들러들
@@ -395,12 +398,12 @@ const onDrop = (e) => {
     }, 16);
   }, [activeFile]);
 
-  const handleDownloadSanitized = useCallback(async () => {
+  const handleDownloadSanitized = useCallback(async (dirPath) => {
   try {
     const inv = getIpcInvoke();
     if (inv) {
       // 실제 산출물 경로를 main에서 받아 열기(추후 교체)
-      const filePath = await inv('get-sanitized-file', { name: activeFile });
+      const filePath = await inv('get-sanitized-file', { name: activeFile, dirPath });
       if (filePath) { await inv('open-path', filePath); return; }
     }
   } catch {}
@@ -410,6 +413,41 @@ const onDrop = (e) => {
   const a = document.createElement('a'); a.href = url; a.download = (activeFile || 'sanitized') + '.txt';
   a.click(); URL.revokeObjectURL(url);
 }, [activeFile]);
+
+const [showDownloadAlert, setShowDownloadAlert] = useState(false);
+const [downloadPath, setDownloadPath] = useState('');
+const openDownloadAlert  = useCallback(() => setShowDownloadAlert(true), []);
+const closeDownloadAlert = useCallback(() => setShowDownloadAlert(false), []);
+
+// 경로 선택(IPC가 있으면 네이티브 다이얼로그 호출, 없으면 폴백)
+const pickDownloadPath = useCallback(async () => {
+  try {
+   const inv = getIpcInvoke();
+    if (inv) {
+      const picked = await inv('pick-directory'); // main에서 showOpenDialog({properties:['openDirectory']})
+      if (picked) setDownloadPath(picked);
+      return;
+    }
+  } catch {}
+  // 폴백: 브라우저 환경에선 경로 개념이 없으니 안내만
+  alert('데스크톱 앱에서 경로를 선택할 수 있습니다. (브라우저에서는 자동 다운로드로 진행됩니다)');
+}, []);
+
+  // Download 버튼 → 저장 실행 후 완료 화면 표시
+  const handleDownloadAndShowComplete = useCallback(async () => {
+    try {
+      await handleDownloadSanitized(); // dirPath 없으면 브라우저는 자동 다운로드
+    } finally {
+      setShowDownloadComplete(true);
+    }
+  }, [handleDownloadSanitized]);
+
+  // 완료 화면의 Back: 상세 기본 화면으로 복귀
+  const handleBackToDetails = useCallback(() => {
+    setShowDownloadComplete(false);
+    setIsCleaning(false);
+    setIsCleanComplete(false);
+  }, []);
 
 
   // 리턴
@@ -602,7 +640,7 @@ const onDrop = (e) => {
     )}
 
     {/* ③ 완료 화면 + 다운로드 버튼 */}
-    {isCleanComplete && (
+    {isCleanComplete && !showDownloadComplete && (
       <div
         className="cleanup-done"
         style={{
@@ -622,11 +660,38 @@ const onDrop = (e) => {
             <div className="fill" style={{ width: '100%' }} />
           </div>
         </div>
-        <Button variant="ghost" size="sm" onClick={handleDownloadSanitized}>
+        <Button variant="ghost" size="sm" onClick={openDownloadAlert}>
           Download
         </Button>
       </div>
     )}
+    {/* ④ Download Complete 화면 */}
+   {showDownloadComplete && (
+     <div
+       className="download-complete"
+       style={{
+         display: 'flex',
+         flexDirection: 'column',
+         alignItems: 'center',
+         justifyContent: 'center',
+         minHeight: '360px',
+         gap: '22px',
+       }}
+     >
+       <img src={downloadAlert} alt="" style={{ width: 92, height: 92 }} />
+       <div style={{ fontSize: '22px', letterSpacing: '4px', color: '#FFA02B' }}>
+         Download Complete
+       </div>
+       <div style={{ display: 'flex', gap: 12 }}>
+         <Button size="sm" variant="ghost" onClick={handleBackToDetails}>
+          Back
+         </Button>
+         <Button size="sm" onClick={handleGoToMain}>
+           Go to main
+         </Button>
+       </div>
+     </div>
+   )}
   </div>
 )}
 
@@ -661,6 +726,52 @@ const onDrop = (e) => {
           <div className="alert-actions" style={{ gap: '12px' }}>
             <Button size="sm" onClick={confirmCleanup}>Yes</Button>
             <Button size="sm" variant="ghost" onClick={closeCleanupConfirm}>Close ✕</Button>
+          </div>
+        </Alert>
+      )}
+
+      {showDownloadAlert && (
+        <Alert
+          color="#FFA02B"
+          title="Download?"
+          icon={<img src={downloadAlert} alt="" />}
+        >
+          <div style={{textAlign:'center', margin:'6px 0 18px', lineHeight:1.6}}>
+            <div style={{opacity:.9}}>
+              클린업 작업이 끝난 문서가<br/>저장될 위치를 골라주세요.
+            </div>
+          </div>
+
+          {/* 경로 표시 바(스샷 느낌의 회색 바) */}
+          <div
+            style={{
+              display:'flex', gap:'12px', alignItems:'center', justifyContent:'center',
+              margin:'12px 0 18px'
+            }}
+          >
+            <div
+              className="dl-pathbar"
+              title={downloadPath || '경로를 지정하세요'}
+              style={{
+                flex:'0 1 72%', height:'44px', borderRadius:'22px',
+                background:'#8F95A0', opacity:.85, display:'flex', alignItems:'center',
+                padding:'0 16px', color:'#121316', overflow:'hidden', whiteSpace:'nowrap',
+                textOverflow:'ellipsis'
+              }}
+            >
+              {downloadPath || '저장 경로 미선택'}
+            </div>
+            <Button size="sm" onClick={pickDownloadPath}>경로 지정</Button>
+          </div>
+
+          <div className="alert-actions" style={{ gap:'12px', justifyContent:'center' }}>
+            <Button
+              size="sm"
+              onClick={async () => { await handleDownloadSanitized(downloadPath); closeDownloadAlert(); setShowDownloadComplete(true); }}
+            >
+              다운로드
+            </Button>
+            <Button size="sm" variant="ghost" onClick={closeDownloadAlert}>닫기 ✕</Button>
           </div>
         </Alert>
       )}
