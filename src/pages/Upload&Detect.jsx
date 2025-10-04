@@ -82,6 +82,8 @@ export default function UploadAndDetect() {
 
   // --- Alert 상태 & 제어
   const [showInvalidType, setShowInvalidType] = useState(false);
+  const [lastSanitizedPath, setLastSanitizedPath] = useState(null);
+  const [origByName, setOrigByName] = useState({});
   const openInvalidTypeAlert  = useCallback(() => setShowInvalidType(true), []);
   const closeInvalidTypeAlert = useCallback(() => setShowInvalidType(false), []);
 
@@ -232,6 +234,8 @@ export default function UploadAndDetect() {
     const filtered = arr.filter((f) => ALLOWED.test(f.name));
     if (!filtered.length) return;
 
+    setOrigByName(Object.fromEntries(filtered.map(f => [f.name, f])));
+
     const today = fmtDate();
     setRows(filtered.map((f) => ({ name: f.name, date: today })));
     setProgress(0);
@@ -376,14 +380,39 @@ const onDrop = (e) => {
   const [cleanupProgress, setCleanupProgress] = useState(0);  // 진행률(더미)
   const closeCleanupConfirm = useCallback(() => setShowCleanupConfirm(false), []);
 
-  const confirmCleanup = useCallback(() => {
-    console.log('[cleanup] confirm for', activeFile); // TODO: 실제 클린업 로직 연결 예정
+  const confirmCleanup = useCallback(async () => {
+  try {
+    if (!activeFile) return;
     setShowCleanupConfirm(false);
     setIsCleanComplete(false);
     setIsCleaning(true);
     setCleanupProgress(0);
 
-    // 2초짜리 더미 프로그레스 (나중에 AI 연동 시 이 부분만 교체)
+    const inv = getIpcInvoke();
+    let outPath = null;
+
+    if (inv) {
+      // 원본 바이트 확보 (이름으로 보관해둔 File에서 꺼냄)
+      const srcFile = origByName[activeFile];
+      const bytes = srcFile ? await srcFile.arrayBuffer() : null;
+
+      // 실제 클린업 실행 (별표 마스킹 / LLM 비활성화)
+      const resp = await inv('sanitize-file', {
+        filename: activeFile,
+        srcPath: null,             // 경로가 있으면 채워도 됨
+        bytes,                     // 경로 없으면 바이트 사용
+        detections: activeDetections, // [{ keyword: "KEYWORD : ... at 13367", ... }]
+        mask: '***',
+        noAI: true,
+      });
+      outPath = resp?.outPath || null;
+      setLastSanitizedPath(outPath);
+    } else {
+      // 브라우저 환경 폴백(데모)
+      await new Promise(r => setTimeout(r, 800));
+    }
+
+    // 진행 애니메이션 (UX 유지)
     const duration = 2000;
     const start = Date.now();
     const timer = setInterval(() => {
@@ -391,28 +420,41 @@ const onDrop = (e) => {
       setCleanupProgress(p);
       if (p >= 100) {
         clearInterval(timer);
-        // 2) 완료 화면으로 전환
         setIsCleaning(false);
         setIsCleanComplete(true);
       }
     }, 16);
-  }, [activeFile]);
+  } catch (e) {
+    console.error('[cleanup] fail', e);
+    setIsCleaning(false);
+    alert('클린업 중 오류가 발생했습니다.\n' + (e?.message || e));
+  }
+}, [activeFile, activeDetections, origByName]);
 
-  const handleDownloadSanitized = useCallback(async (dirPath) => {
+
+const handleDownloadSanitized = useCallback(async (dirPath) => {
   try {
     const inv = getIpcInvoke();
-    if (inv) {
-      // 실제 산출물 경로를 main에서 받아 열기(추후 교체)
-      const filePath = await inv('get-sanitized-file', { name: activeFile, dirPath });
-      if (filePath) { await inv('open-path', filePath); return; }
+    if (inv && lastSanitizedPath) {
+      if (dirPath) {
+        const saved = await inv('save-sanitized-to', { src: lastSanitizedPath, dir: dirPath });
+        if (saved) { await inv('open-path', saved); return; }
+      } else {
+        // 경로 지정 없으면 산출물 위치 보여주기
+        await inv('open-path', lastSanitizedPath);
+        return;
+      }
     }
-  } catch {}
-  // 데모용 더미 다운로드
+  } catch (e) {
+    console.error('[download]', e);
+  }
+  // 폴백(브라우저): 더미 파일 내려주기
   const blob = new Blob([`Sanitized file: ${activeFile}\n(dummy)`], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href = url; a.download = (activeFile || 'sanitized') + '.txt';
   a.click(); URL.revokeObjectURL(url);
-}, [activeFile]);
+}, [activeFile, lastSanitizedPath]);
+
 
 const [showDownloadAlert, setShowDownloadAlert] = useState(false);
 const [downloadPath, setDownloadPath] = useState('');
@@ -448,7 +490,6 @@ const pickDownloadPath = useCallback(async () => {
     setIsCleaning(false);
     setIsCleanComplete(false);
   }, []);
-
 
   // 리턴
   return (
